@@ -1,0 +1,1 @@
+# spring-mongo-recipe-app
