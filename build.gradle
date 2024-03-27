@@ -1,0 +1,39 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.2.4'
+	id 'io.spring.dependency-management' version '1.1.4'
+	id 'jacoco'
+}
+
+group = 'guru.springframework'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	sourceCompatibility = '17'
+}
+
+repositories {
+	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+	maven { url "https://repo.spring.io/milestone" }
+}
+
+
+dependencies {
+	implementation ('org.springframework.boot:spring-boot-starter-data-mongodb')
+	implementation ('org.springframework.boot:spring-boot-starter-thymeleaf')
+	implementation ('org.springframework.boot:spring-boot-starter-web')
+	implementation ('org.springframework.boot:spring-boot-starter-validation')
+	compileOnly ('org.projectlombok:lombok')
+	developmentOnly ('org.springframework.boot:spring-boot-devtools')
+	annotationProcessor ('org.projectlombok:lombok')
+	testImplementation ('org.springframework.boot:spring-boot-starter-test')
+}
+
+//export test coverage
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = false
+    }
+}
