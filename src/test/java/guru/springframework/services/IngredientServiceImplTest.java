@@ -9,10 +9,12 @@ import guru.springframework.domain.Ingredient;
 import guru.springframework.domain.Recipe;
 import guru.springframework.repositories.RecipeRepository;
 import guru.springframework.repositories.UnitOfMeasureRepository;
+import guru.springframework.repositories.reactive.RecipeReactiveRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -24,6 +26,9 @@ public class IngredientServiceImplTest {
 
     private final IngredientToIngredientCommand ingredientToIngredientCommand;
     private final IngredientCommandToIngredient ingredientCommandToIngredient;
+
+    @Mock
+    RecipeReactiveRepository recipeReactiveRepository;
 
     @Mock
     RecipeRepository recipeRepository;
@@ -44,7 +49,7 @@ public class IngredientServiceImplTest {
         MockitoAnnotations.initMocks(this);
 
         ingredientService = new IngredientServiceImpl(ingredientToIngredientCommand, ingredientCommandToIngredient,
-                recipeRepository, unitOfMeasureRepository);
+                recipeReactiveRepository, recipeRepository, unitOfMeasureRepository);
     }
 
     @Test
@@ -69,16 +74,16 @@ public class IngredientServiceImplTest {
         recipe.addIngredient(ingredient1);
         recipe.addIngredient(ingredient2);
         recipe.addIngredient(ingredient3);
-        Optional<Recipe> recipeOptional = Optional.of(recipe);
 
-        when(recipeRepository.findById(anyString())).thenReturn(recipeOptional);
+        when(recipeReactiveRepository.findById(anyString())).thenReturn(Mono.just(recipe));
 
         //then
-        IngredientCommand ingredientCommand = ingredientService.findByRecipeIdAndIngredientId("1", "3");
+        IngredientCommand ingredientCommand = ingredientService.findByRecipeIdAndIngredientId("1", "3").block();
 
         //when
         assertEquals("3", ingredientCommand.getId());
-        verify(recipeRepository, times(1)).findById(anyString());
+        assertEquals("1", ingredientCommand.getRecipeId());
+        verify(recipeReactiveRepository, times(1)).findById(anyString());
     }
 
 
