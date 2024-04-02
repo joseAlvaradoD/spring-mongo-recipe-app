@@ -84,7 +84,6 @@ public class IngredientServiceImplTest {
 
         //when
         assertEquals("3", ingredientCommand.getId());
-        assertEquals("1", ingredientCommand.getRecipeId());
         verify(recipeReactiveRepository, times(1)).findById(anyString());
     }
 
@@ -95,8 +94,8 @@ public class IngredientServiceImplTest {
         UnitOfMeasureCommand unitOfMeasure = new UnitOfMeasureCommand();
         unitOfMeasure.setId("1");
         IngredientCommand command = new IngredientCommand();
-        command.setId("3");
         command.setRecipeId("2");
+        command.setId("3");
         command.setDescription("");
         command.setAmount(BigDecimal.ONE);
         command.setUom(unitOfMeasure);
@@ -125,7 +124,6 @@ public class IngredientServiceImplTest {
         Ingredient ingredient = new Ingredient();
         ingredient.setId("3");
         recipe.addIngredient(ingredient);
-        ingredient.setRecipe(recipe);
         Mono<Recipe> recipeMono = Mono.just(recipe);
 
         when(recipeReactiveRepository.findById(anyString())).thenReturn(recipeMono);

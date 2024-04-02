@@ -4,6 +4,7 @@ import guru.springframework.commands.IngredientCommand;
 import guru.springframework.converters.IngredientCommandToIngredient;
 import guru.springframework.converters.IngredientToIngredientCommand;
 import guru.springframework.domain.Ingredient;
+import guru.springframework.domain.Recipe;
 import guru.springframework.repositories.reactive.RecipeReactiveRepository;
 import guru.springframework.repositories.reactive.UnitOfMeasureReactiveRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +56,7 @@ public class IngredientServiceImpl implements IngredientService {
 
         return recipeReactiveRepository
             .findById(command.getRecipeId())
-                .map(
+                .flatMap(
                     recipe -> {
                         Optional<Ingredient> ingredientOptional =
                         recipe.getIngredients().stream()
@@ -65,37 +66,29 @@ public class IngredientServiceImpl implements IngredientService {
                             Ingredient ingredientFound = ingredientOptional.get();
                             ingredientFound.setDescription(command.getDescription());
                             ingredientFound.setAmount(command.getAmount());
-                            ingredientFound.setUom(unitOfMeasureReactiveRepository
-                                    .findById(command.getUom().getId())
-                                    .blockOptional()
-                                    .orElseThrow(() -> new RuntimeException("UOM NOT FOUND"))); //todo address this
+                            unitOfMeasureReactiveRepository.findById(command.getUom().getId())
+                                    .map(unitOfMeasure -> {
+                                        ingredientFound.setUom(unitOfMeasure);
+                                        return unitOfMeasure;
+                                    });
                         } else {
                             //add new Ingredient
                             Ingredient ingredient = ingredientCommandToIngredient.convert(command);
-                            ingredient.setUom(unitOfMeasureReactiveRepository
-                                    .findById(command.getUom().getId())
-                                    .blockOptional()
-                                    .orElseThrow(() -> new RuntimeException("UOM NOT FOUND")));
-                            recipe.addIngredient(ingredient);
+                            unitOfMeasureReactiveRepository.findById(command.getUom().getId())
+                                    .map(unitOfMeasure -> {
+                                        ingredient.setUom(unitOfMeasure);
+                                        recipe.addIngredient(ingredient);
+                                        return unitOfMeasure;
+                                    });
+                            recipe.getIngredients().add(ingredient);
                         }
-
-                        return recipeReactiveRepository.save(recipe).map(savedRecipe ->
-                            savedRecipe.getIngredients().stream().filter(
-                                ingredient -> ingredient.getId().equals(command.getId())
-                            )
-                            .findFirst()
-                            .orElse(
-                                savedRecipe.getIngredients().stream()
-                                    .filter(recipeIngredients -> recipeIngredients.getDescription().equals(command.getDescription()))
-                                    .filter(recipeIngredients -> recipeIngredients.getAmount().equals(command.getAmount()))
-                                    .filter(recipeIngredients -> recipeIngredients.getUom().getId().equals(command.getUom().getId()))
-                                .findFirst()
-                                .get()
-                            ))
-                            .map(ingredientToIngredientCommand::convert)
-                            .block();
+                        return recipeReactiveRepository.save(recipe);
                     }
-                );
+                ).map(savedRecipe ->
+                        savedRecipe.getIngredients().stream().filter(
+                                ingredient -> ingredient.getId().equals(command.getId())
+                        ).findFirst().get())
+                .map(ingredientToIngredientCommand::convert);
     }
 
 
