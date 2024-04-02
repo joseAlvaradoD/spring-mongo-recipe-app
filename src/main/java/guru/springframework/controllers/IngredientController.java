@@ -82,19 +82,22 @@ public class IngredientController {
     }
 
     @PostMapping("recipe/{recipeId}/ingredient")
-    public Mono<String> saveOrUpdate(@Valid @ModelAttribute IngredientCommand command, BindingResult bindingResult){
+    public Mono<String> saveOrUpdate(@Valid @ModelAttribute IngredientCommand command, BindingResult bindingResult, Model model){
 
         if(bindingResult.hasErrors()){
 
             bindingResult.getAllErrors().forEach(objectError -> {
                 log.debug(objectError.toString());
             });
+            model.addAttribute("ingredient", command);
+
+            model.addAttribute("uomList",  unitOfMeasureService.listAllUoms());
 
             return Mono.just("recipe/ingredient/ingredientform");
         }
 
         return ingredientService.saveIngredientCommand(command).map(savedCommand ->
-            "redirect:/recipe/" + savedCommand.getRecipeId() + "/ingredient/" + savedCommand.getId() + "/show"
+            "redirect:/recipe/" + command.getRecipeId() + "/ingredient/" + savedCommand.getId() + "/show"
         );
     }
 

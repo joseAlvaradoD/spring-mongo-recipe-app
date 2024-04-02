@@ -135,7 +135,6 @@ public class IngredientControllerTest {
         IngredientCommand ingredientCommand = new IngredientCommand();
         ingredientCommand.setDescription("some description");
         ingredientCommand.setAmount(BigDecimal.ONE);
-        ingredientCommand.setRecipeId("2");
         ingredientCommand.setUom(unitOfMeasureCommand);
 
         //when
@@ -158,10 +157,10 @@ public class IngredientControllerTest {
     public void testSaveOrUpdate() throws Exception {
         //given
         IngredientCommand command = new IngredientCommand();
+        command.setRecipeId("2");
         command.setId("3");
         command.setDescription("some description");
         command.setAmount(BigDecimal.ONE);
-        command.setRecipeId("2");
         command.setUom(new UnitOfMeasureCommand());
 
         //when
