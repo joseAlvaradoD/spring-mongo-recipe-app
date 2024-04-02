@@ -6,6 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.support.WebExchangeBindException;
 
 /**
  * Created by jt on 7/14/17.
@@ -15,7 +16,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class ControllerExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(NumberFormatException.class)
+    @ExceptionHandler({
+            NumberFormatException.class,
+            WebExchangeBindException.class})
     public String handleNumberFormat(Exception exception, Model model){
 
         log.error("Handling Number Format Exception");
