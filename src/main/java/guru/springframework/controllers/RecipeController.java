@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 
 /**
@@ -48,7 +49,7 @@ public class RecipeController {
     }
 
     @PostMapping("recipe")
-    public String saveOrUpdate(@Valid @ModelAttribute("recipe") RecipeCommand command, BindingResult bindingResult){
+    public Mono<String> saveOrUpdate(@Valid @ModelAttribute("recipe") RecipeCommand command, BindingResult bindingResult){
 
         if(bindingResult.hasErrors()){
 
@@ -56,12 +57,12 @@ public class RecipeController {
                 log.debug(objectError.toString());
             });
 
-            return RECIPE_RECIPEFORM_URL;
+            return Mono.just(RECIPE_RECIPEFORM_URL);
         }
 
-        RecipeCommand savedCommand = recipeService.saveRecipeCommand(command).block();
+        return recipeService.saveRecipeCommand(command).map(recipeCommand ->
+                "redirect:/recipe/" + recipeCommand.getId() + "/show");
 
-        return "redirect:/recipe/" + savedCommand.getId() + "/show";
     }
 
     @GetMapping("recipe/{id}/delete")

@@ -26,6 +26,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 
@@ -132,6 +133,9 @@ public class IngredientControllerTest {
         UnitOfMeasureCommand unitOfMeasureCommand = new UnitOfMeasureCommand();
         unitOfMeasureCommand.setId("1");
         IngredientCommand ingredientCommand = new IngredientCommand();
+        ingredientCommand.setDescription("some description");
+        ingredientCommand.setAmount(BigDecimal.ONE);
+        ingredientCommand.setRecipeId("2");
         ingredientCommand.setUom(unitOfMeasureCommand);
 
         //when
@@ -155,7 +159,10 @@ public class IngredientControllerTest {
         //given
         IngredientCommand command = new IngredientCommand();
         command.setId("3");
+        command.setDescription("some description");
+        command.setAmount(BigDecimal.ONE);
         command.setRecipeId("2");
+        command.setUom(new UnitOfMeasureCommand());
 
         //when
         when(ingredientService.saveIngredientCommand(any())).thenReturn(Mono.just(command));
@@ -164,7 +171,10 @@ public class IngredientControllerTest {
         List<String> html = webTestClient.post().uri("/recipe/2/ingredient")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters.fromFormData("id","")
-                    .with("description", "some string"))
+                    .with("recipeId", "2")
+                    .with("description", "some string")
+                    .with("amount", "1")
+                    .with("uom.id", "1"))
                 .exchange()
                 .expectStatus().is3xxRedirection()
                 .returnResult(String.class)
